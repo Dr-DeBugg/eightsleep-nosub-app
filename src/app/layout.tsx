@@ -6,6 +6,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "~/lib/utils";
+import { Toaster } from "../lib/toaster";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -22,19 +23,18 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-      <html
-        lang="en"
-        className={cn(
-          "dark",
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable,
-        )}
-      >
-        <body>
-          <TRPCReactProvider>
-            {children}
-          </TRPCReactProvider>
-        </body>
-      </html>
+    <html
+      lang="en"
+      className={cn(
+        "dark",
+        "min-h-screen bg-background font-sans antialiased",
+        fontSans.variable,
+      )}
+    >
+      <body>
+        <Toaster />
+        <TRPCReactProvider>{children}</TRPCReactProvider>
+      </body>
+    </html>
   );
 }

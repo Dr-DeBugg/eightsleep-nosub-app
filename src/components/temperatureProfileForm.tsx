@@ -6,6 +6,7 @@ import { z } from "zod";
 import { apiR } from "~/trpc/react";
 import TimezoneSelect, { allTimezones } from "react-timezone-select";
 import { Button } from "./ui/button";
+import { useToast } from "../lib/use-toast";
 
 const temperatureProfileSchema = z.object({
   bedTime: z.string().regex(/^\d{2}:\d{2}$/, "Must be in HH:MM format"),
@@ -25,7 +26,10 @@ type TemperatureProfileForm = z.infer<typeof temperatureProfileSchema>;
 export const TemperatureProfileForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isExistingProfile, setIsExistingProfile] = useState(false);
-  const [sleepDurationError, setSleepDurationError] = useState<string | null>(null);
+  const [sleepDurationError, setSleepDurationError] = useState<string | null>(
+    null,
+  );
+  const { toast } = useToast();
 
   const {
     register,
@@ -43,7 +47,7 @@ export const TemperatureProfileForm: React.FC = () => {
       initialSleepLevel: 0,
       midStageSleepLevel: 0,
       finalSleepLevel: 0,
-      timezone: { value: "America/New_York"},
+      timezone: { value: "America/New_York" },
     },
   });
 
@@ -56,8 +60,8 @@ export const TemperatureProfileForm: React.FC = () => {
     finalStageTime: "",
   });
 
-  const getUserTemperatureProfileQuery = apiR.user.getUserTemperatureProfile.useQuery();
-  
+  const getUserTemperatureProfileQuery =
+    apiR.user.getUserTemperatureProfile.useQuery();
 
   useEffect(() => {
     if (getUserTemperatureProfileQuery.isSuccess) {
@@ -71,11 +75,20 @@ export const TemperatureProfileForm: React.FC = () => {
       setIsExistingProfile(true);
       setIsLoading(false);
     } else if (getUserTemperatureProfileQuery.isError) {
-      console.error("Failed to fetch temperature profile. Using default values.", getUserTemperatureProfileQuery.error);
+      console.error(
+        "Failed to fetch temperature profile. Using default values.",
+        getUserTemperatureProfileQuery.error,
+      );
       setIsExistingProfile(false);
       setIsLoading(false);
     }
-  }, [getUserTemperatureProfileQuery.isSuccess, getUserTemperatureProfileQuery.isError, getUserTemperatureProfileQuery.data, setValue, getUserTemperatureProfileQuery.error]);
+  }, [
+    getUserTemperatureProfileQuery.isSuccess,
+    getUserTemperatureProfileQuery.isError,
+    getUserTemperatureProfileQuery.data,
+    setValue,
+    getUserTemperatureProfileQuery.error,
+  ]);
 
   useEffect(() => {
     if (bedTime && wakeupTime) {
@@ -91,13 +104,15 @@ export const TemperatureProfileForm: React.FC = () => {
       const minutes = Math.round((durationMs % (1000 * 60 * 60)) / (1000 * 60));
 
       // Check if sleep duration is less than 4 hours
-      if (hours < 4 ) {
+      if (hours < 4) {
         setSleepDurationError("Sleep duration must be at least 4 hours.");
         setSleepInfo({ duration: "", midStageTime: "", finalStageTime: "" });
       } else {
         setSleepDurationError(null);
         const midStageDate = new Date(bedDate.getTime() + 60 * 60 * 1000); // 1 hour after bedtime
-        const finalStageDate = new Date(wakeDate.getTime() - 2 * 60 * 60 * 1000); // 2 hours before wakeup
+        const finalStageDate = new Date(
+          wakeDate.getTime() - 2 * 60 * 60 * 1000,
+        ); // 2 hours before wakeup
 
         setSleepInfo({
           duration: `${hours} hours ${minutes} minutes`,
@@ -147,23 +162,63 @@ export const TemperatureProfileForm: React.FC = () => {
       timezoneTZ: data.timezone.value,
     };
 
-    console.log('Data being sent to server:', mutationData);
+    console.log("Data being sent to server:", mutationData);
 
     updateProfileMutation.mutate(mutationData);
   };
 
   const onDelete = () => {
-    if (window.confirm("Are you sure you want to delete your temperature profile?")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete your temperature profile?",
+      )
+    ) {
       deleteProfileMutation.mutate();
     }
   };
 
-  const SliderInput: React.FC<{
+  // const SliderInput: React.FC<{
+  //   name: "initialSleepLevel" | "midStageSleepLevel" | "finalSleepLevel";
+  //   label: string;
+  //   control: Control<TemperatureProfileForm>;
+  //   info?: string;
+  // }> = ({ name, label, control, info }) => (
+  //   <div className="mb-4">
+  //     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+  //       {label}
+  //     </label>
+  //     <Controller
+  //       name={name}
+  //       control={control}
+  //       render={({ field: { onChange, value } }) => (
+  //         <div className="flex items-center">
+  //           <input
+  //             type="range"
+  //             min="-10"
+  //             max="10"
+  //             step="1"
+  //             value={value}
+  //             onChange={(e) => onChange(Number(e.target.value))}
+  //             className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
+  //           />
+  //           <span className="ml-2 text-sm text-gray-600">{value}</span>
+  //         </div>
+  //       )}
+  //     />
+  //     {info && <p className="mt-1 text-sm text-blue-600">{info}</p>}
+  //     {errors[name] && (
+  //       <p className="mt-1 text-sm text-red-600">{errors[name]?.message}</p>
+  //     )}
+  //   </div>
+  // );
+
+  const NumberButtonInput: React.FC<{
     name: "initialSleepLevel" | "midStageSleepLevel" | "finalSleepLevel";
     label: string;
     control: Control<TemperatureProfileForm>;
     info?: string;
-  }> = ({ name, label, control, info }) => (
+    errors?: any;
+  }> = ({ name, label, control, info, errors }) => (
     <div className="mb-4">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700">
         {label}
@@ -172,22 +227,41 @@ export const TemperatureProfileForm: React.FC = () => {
         name={name}
         control={control}
         render={({ field: { onChange, value } }) => (
-          <div className="flex items-center">
-            <input
-              type="range"
-              min="-10"
-              max="10"
-              step="1"
-              value={value}
-              onChange={(e) => onChange(Number(e.target.value))}
-              className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
-            />
-            <span className="ml-2 text-sm text-gray-600">{value}</span>
+          <div className="mt-2 flex items-center space-x-12">
+            <button
+              type="button"
+              onClick={() => {
+                onChange(Math.max(-10, Number(value) - 1));
+                toast({
+                  title: `Temp changed to ${Math.max(-10, Number(value) - 1)}`,
+                  variant: "info",
+                });
+              }}
+              className="rounded-md bg-gray-200 px-8 py-4 text-lg font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              -
+            </button>
+            <span className="min-w-16 rounded-md bg-gray-100 px-12 py-4 text-center text-xl">
+              {value}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onChange(Math.min(10, Number(value) + 1));
+                toast({
+                  variant: "warm",
+                  title: `Temp changed to ${Math.min(10, Number(value) + 1)}`,
+                });
+              }}
+              className="rounded-md bg-gray-200 px-8 py-4 text-lg font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              +
+            </button>
           </div>
         )}
       />
       {info && <p className="mt-1 text-sm text-blue-600">{info}</p>}
-      {errors[name] && (
+      {errors && errors[name] && (
         <p className="mt-1 text-sm text-red-600">{errors[name]?.message}</p>
       )}
     </div>
@@ -286,7 +360,7 @@ export const TemperatureProfileForm: React.FC = () => {
           )}
         </div>
 
-        <SliderInput
+        {/* <SliderInput
           name="initialSleepLevel"
           label="Initial Sleep Level"
           control={control}
@@ -303,6 +377,28 @@ export const TemperatureProfileForm: React.FC = () => {
           label="Final Sleep Level"
           control={control}
           info={`Starts at ${sleepInfo.finalStageTime}`}
+        /> */}
+
+        <NumberButtonInput
+          name="initialSleepLevel"
+          label="Initial Sleep Level"
+          control={control}
+          info={`Starts at ${bedTime}`}
+          errors={errors}
+        />
+        <NumberButtonInput
+          name="midStageSleepLevel"
+          label="Mid-Stage Sleep Level"
+          control={control}
+          info={`Starts at ${sleepInfo.midStageTime}`}
+          errors={errors}
+        />
+        <NumberButtonInput
+          name="finalSleepLevel"
+          label="Final Sleep Level"
+          control={control}
+          info={`Starts at ${sleepInfo.finalStageTime}`}
+          errors={errors}
         />
 
         <div className="flex justify-between">
@@ -311,7 +407,9 @@ export const TemperatureProfileForm: React.FC = () => {
             className="flex-grow rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             disabled={updateProfileMutation.isPending || !!sleepDurationError}
           >
-            {updateProfileMutation.isPending ? "Updating..." : (isExistingProfile ? "Update" : "Create") + " Profile"}
+            {updateProfileMutation.isPending
+              ? "Updating..."
+              : (isExistingProfile ? "Update" : "Create") + " Profile"}
           </Button>
           {isExistingProfile && (
             <Button
@@ -320,7 +418,9 @@ export const TemperatureProfileForm: React.FC = () => {
               className="ml-4 rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               disabled={deleteProfileMutation.isPending}
             >
-              {deleteProfileMutation.isPending ? "Deleting..." : "Delete Schedule"}
+              {deleteProfileMutation.isPending
+                ? "Deleting..."
+                : "Delete Schedule"}
             </Button>
           )}
         </div>
