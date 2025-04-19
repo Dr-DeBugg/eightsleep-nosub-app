@@ -13,7 +13,7 @@ export default function ClientHome({
   const [isLoggedIn, setIsLoggedIn] = useState(initialLoginState);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-black">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
         <h1 className="text-center text-5xl font-extrabold tracking-tight sm:text-[5rem]">
           Eightsleep <span className="text-[hsl(280,100%,70%)]">Nosub</span> App
@@ -24,7 +24,7 @@ export default function ClientHome({
           )}
           {isLoggedIn && (
             <>
-              <div className="mx-auto flex w-full flex-row items-center justify-center rounded-lg bg-white p-6 shadow-xl">
+              <div className="mx-auto flex w-full flex-row items-center justify-center rounded-lg bg-black p-6 text-gray-400 shadow-xl">
                 <LogoutButton onLogoutSuccess={() => setIsLoggedIn(false)} />
               </div>
               <TemperatureProfileForm />

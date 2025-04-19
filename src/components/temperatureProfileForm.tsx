@@ -38,7 +38,7 @@ export const TemperatureProfileForm: React.FC = () => {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<TemperatureProfileForm>({
     resolver: zodResolver(temperatureProfileSchema),
     defaultValues: {
@@ -177,41 +177,6 @@ export const TemperatureProfileForm: React.FC = () => {
     }
   };
 
-  // const SliderInput: React.FC<{
-  //   name: "initialSleepLevel" | "midStageSleepLevel" | "finalSleepLevel";
-  //   label: string;
-  //   control: Control<TemperatureProfileForm>;
-  //   info?: string;
-  // }> = ({ name, label, control, info }) => (
-  //   <div className="mb-4">
-  //     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-  //       {label}
-  //     </label>
-  //     <Controller
-  //       name={name}
-  //       control={control}
-  //       render={({ field: { onChange, value } }) => (
-  //         <div className="flex items-center">
-  //           <input
-  //             type="range"
-  //             min="-10"
-  //             max="10"
-  //             step="1"
-  //             value={value}
-  //             onChange={(e) => onChange(Number(e.target.value))}
-  //             className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
-  //           />
-  //           <span className="ml-2 text-sm text-gray-600">{value}</span>
-  //         </div>
-  //       )}
-  //     />
-  //     {info && <p className="mt-1 text-sm text-blue-600">{info}</p>}
-  //     {errors[name] && (
-  //       <p className="mt-1 text-sm text-red-600">{errors[name]?.message}</p>
-  //     )}
-  //   </div>
-  // );
-
   const NumberButtonInput: React.FC<{
     name: "initialSleepLevel" | "midStageSleepLevel" | "finalSleepLevel";
     label: string;
@@ -220,14 +185,17 @@ export const TemperatureProfileForm: React.FC = () => {
     errors?: any;
   }> = ({ name, label, control, info, errors }) => (
     <div className="mb-4">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label
+        htmlFor={name}
+        className="block bg-black text-sm font-medium text-gray-700"
+      >
         {label}
       </label>
       <Controller
         name={name}
         control={control}
         render={({ field: { onChange, value } }) => (
-          <div className="mt-2 flex items-center space-x-12">
+          <div className="mt-2 flex items-center space-x-12 bg-black p-6 text-gray-400">
             <button
               type="button"
               onClick={() => {
@@ -237,11 +205,11 @@ export const TemperatureProfileForm: React.FC = () => {
                   variant: "info",
                 });
               }}
-              className="rounded-md bg-gray-200 px-8 py-4 text-lg font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="focus:outline-blue rounded-md border-2 border-yellow-400 bg-black p-6 px-8 py-4 text-lg font-medium text-gray-400 text-gray-700 ring-blue-500 hover:bg-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               -
             </button>
-            <span className="min-w-16 rounded-md bg-gray-100 px-12 py-4 text-center text-xl">
+            <span className="min-w-16 rounded-md bg-black p-6 px-12 py-4 text-center text-xl text-gray-400">
               {value}
             </span>
             <button
@@ -253,7 +221,7 @@ export const TemperatureProfileForm: React.FC = () => {
                   title: `Temp changed to ${Math.min(10, Number(value) + 1)}`,
                 });
               }}
-              className="rounded-md bg-gray-200 px-8 py-4 text-lg font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="rounded-md border-2 border-yellow-400 bg-black p-6 px-8 py-4 text-lg font-medium text-gray-400 text-gray-700 ring-blue-500 hover:bg-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               +
             </button>
@@ -272,7 +240,7 @@ export const TemperatureProfileForm: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto mt-8 max-w-md rounded-lg bg-white p-6 shadow-xl">
+    <div className="mx-auto mt-8 max-w-md rounded-lg bg-black p-6 text-gray-400 shadow-xl">
       <h2 className="mb-4 text-center text-2xl font-bold text-gray-800">
         {isExistingProfile ? "Update" : "Create"} Temperature Profile
       </h2>
@@ -294,12 +262,37 @@ export const TemperatureProfileForm: React.FC = () => {
               <TimezoneSelect
                 value={field.value}
                 onChange={field.onChange}
+                styles={{
+                  control: (baseStyles) => ({
+                    ...baseStyles,
+                    backgroundColor: "black",
+                    borderColor: "#4B5563",
+                    color: "gray",
+                  }),
+                  menu: (baseStyles) => ({
+                    ...baseStyles,
+                    backgroundColor: "black",
+                  }),
+                  option: (baseStyles, state) => ({
+                    ...baseStyles,
+                    backgroundColor: state.isFocused ? "#374151" : "black",
+                    color: "gray",
+                  }),
+                  singleValue: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "gray",
+                  }),
+                  input: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "gray",
+                  }),
+                }}
                 timezones={{
                   ...allTimezones,
                   "America/New_York": "America/New York",
                   "America/Los_Angeles": "America/Los Angeles",
                 }}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                className="mt-1 block w-full rounded-md border-gray-300 bg-black shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
             )}
           />
@@ -320,7 +313,7 @@ export const TemperatureProfileForm: React.FC = () => {
             {...register("bedTime")}
             type="time"
             id="bedTime"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            className="mt-1 block w-full rounded-md border-gray-300 bg-black text-blue-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
           {errors.bedTime && (
             <p className="mt-1 text-sm text-red-600">
@@ -339,7 +332,7 @@ export const TemperatureProfileForm: React.FC = () => {
             {...register("wakeupTime")}
             type="time"
             id="wakeupTime"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            className="mt-1 block w-full rounded-md border-gray-300 bg-black text-blue-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           />
           {errors.wakeupTime && (
             <p className="mt-1 text-sm text-red-600">
@@ -348,7 +341,7 @@ export const TemperatureProfileForm: React.FC = () => {
           )}
         </div>
 
-        <div className="rounded-md bg-blue-50 p-4">
+        <div className="rounded-md bg-black bg-blue-50 p-4">
           {sleepDurationError ? (
             <p className="text-sm text-red-600">{sleepDurationError}</p>
           ) : (
@@ -359,25 +352,6 @@ export const TemperatureProfileForm: React.FC = () => {
             </p>
           )}
         </div>
-
-        {/* <SliderInput
-          name="initialSleepLevel"
-          label="Initial Sleep Level"
-          control={control}
-          info={`Starts at ${bedTime}`}
-        />
-        <SliderInput
-          name="midStageSleepLevel"
-          label="Mid-Stage Sleep Level"
-          control={control}
-          info={`Starts at ${sleepInfo.midStageTime}`}
-        />
-        <SliderInput
-          name="finalSleepLevel"
-          label="Final Sleep Level"
-          control={control}
-          info={`Starts at ${sleepInfo.finalStageTime}`}
-        /> */}
 
         <NumberButtonInput
           name="initialSleepLevel"
@@ -405,7 +379,11 @@ export const TemperatureProfileForm: React.FC = () => {
           <Button
             type="submit"
             className="flex-grow rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            disabled={updateProfileMutation.isPending || !!sleepDurationError}
+            disabled={
+              updateProfileMutation.isPending ||
+              !!sleepDurationError ||
+              !isDirty
+            }
           >
             {updateProfileMutation.isPending
               ? "Updating..."
